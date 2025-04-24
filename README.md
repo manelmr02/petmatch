@@ -10,3 +10,11 @@ Currently, two official plugins are available:
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+# ANOTACIONES SOBRE LA CREACION DE PETMATCH
+En la empresa utilizamos react, firebase y material ui.
+He decidido probar con estas tecnologías con PetMatch.
+
+1. Creación del proyecto con Vite usando un template de React.
+2. Instalacion de las dependencias que hemos necesitado como MaterialUI y firebase.
+3. Base de datos de Firebase -> Utiliza MongoDB.
