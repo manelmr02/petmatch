@@ -1,20 +1,30 @@
 import { useState } from 'react';
-import { TextField, Button, Container, Typography } from '@mui/material';
+import { TextField, Button, Container, Typography, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [tipo, setTipo] = useState('adoptante'); // por defecto
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
+
+      // Guardamos datos extra en Firestore
+      await setDoc(doc(db, "usuarios", uid), {
+        email,
+        tipo
+      });
+
       alert('¡Registro exitoso!');
-      navigate('/mascotas'); // Redirige a la vista de mascotas después de registrarse
+      navigate('/mascotas');
     } catch (error) {
       alert('Error en el registro: ' + error.message);
     }
@@ -39,6 +49,18 @@ export default function Register() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="tipo-label">Tipo de usuario</InputLabel>
+          <Select
+            labelId="tipo-label"
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+            label="Tipo de usuario"
+          >
+            <MenuItem value="adoptante">Adoptante</MenuItem>
+            <MenuItem value="refugio">Refugio</MenuItem>
+          </Select>
+        </FormControl>
         <Button type="submit" variant="contained" color="secondary" fullWidth sx={{ mt: 2 }}>
           Registrarse
         </Button>
