@@ -1,7 +1,7 @@
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-import logo from '../assets/logoPetMatchFinal.png';
+import logo from '../assets/logoPetMatchNoBg.png';
 
 export default function Navbar() {
   return (
