@@ -1,19 +1,27 @@
-import React from "react";
-import logo from "../assets/logoPetMatchNoBg.png"; 
-const Footer = () => {
+import logoImage from "../assets/logoPetMatchNoBg.png"
+
+function Footer() {
   return (
-    <footer className="bg-gray-100 border-t border-gray-200 text-gray-600 py-4 mt-10">
-      <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img src={logo} alt="Logo PetMatch" className="h-6 w-auto max-w-[32px]" />
-          <span className="font-semibold text-base">PetMatch</span>
+    <footer className="w-full py-4 bg-blue-500 text-white mt-auto">
+      <div className="container mx-auto flex flex-col sm:flex-row items-center justify-center sm:justify-between px-4">
+        <div className="flex items-center mb-2 sm:mb-0">
+          <img
+            src={logoImage}
+            alt="PetMatch Logo"
+            width={40}
+            height={40}
+            className="mr-2 object-contain"
+            onError={(e) => {
+              e.target.onerror = null
+              e.target.src = "/placeholder.svg"
+            }}
+          />
+          <span className="font-semibold text-lg">PetMatch</span>
         </div>
-        <p className="text-sm mt-2 md:mt-0 text-center md:text-right">
-          © {new Date().getFullYear()} PetMatch. Todos los derechos reservados.
-        </p>
+        <p className="text-sm">© {new Date().getFullYear()} PetMatch. Todos los derechos reservados.</p>
       </div>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer
