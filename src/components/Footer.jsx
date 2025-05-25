@@ -11,10 +11,6 @@ function Footer() {
             width={40}
             height={40}
             className="mr-2 object-contain"
-            onError={(e) => {
-              e.target.onerror = null
-              e.target.src = "/placeholder.svg"
-            }}
           />
           <span className="font-semibold text-lg">PetMatch</span>
         </div>
