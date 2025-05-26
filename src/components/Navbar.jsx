@@ -7,8 +7,35 @@ export default function Navbar() {
   return (
     <AppBar position="static">
       <Toolbar>
-      <img src={logo} alt="PetMatch logo" style={{ height: 60, marginRight: 10 }} />
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <img
+            src={logo}
+            alt="PetMatch logo"
+            style={{
+              height: 60,
+              marginRight: 10,
+              cursor: "pointer",
+              transition: "transform 0.2s ease-in-out",
+            }}
+            onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+          />
+        </Link>
+        <Typography
+          variant="h6"
+          component={Link}
+          to="/"
+          sx={{
+            flexGrow: 1,
+            textDecoration: "none",
+            color: "inherit",
+            cursor: "pointer",
+            transition: "opacity 0.2s ease-in-out",
+            "&:hover": {
+              opacity: 0.8,
+            },
+          }}
+        >
           PetMatch
         </Typography>
         <Button color="inherit" component={Link} to="/">Inicio</Button>
