@@ -1,11 +1,18 @@
 "use client"
 
 import { useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react"
 
 import cachorros from "../assets/cachorrosFelices.png";
 
 function Home() {
   const navigate = useNavigate()
+
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    setIsVisible(true)
+  }, [])
 
   const handleJoinClick = () => {
     navigate("/register")
@@ -21,15 +28,20 @@ function Home() {
 
         <p className="text-xl md:text-2xl text-gray-600 mb-8">Encuentra a tu mascota ideal</p>
 
-        <div className="mb-8 flex justify-center">
+        <div
+          className={`mb-8 flex justify-center transition-all duration-1000 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            }`}
+        >
           <div className="relative group">
             <img
               src={cachorros}
-              alt="Mascotas felices gracias a PetMatch"
-              className="rounded-2xl shadow-2xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-3xl max-w-full h-auto"
+              alt="Mascotas felices"
+              className="rounded-3xl shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-3xl group-hover:rotate-1 max-w-full h-auto"
               style={{ maxHeight: "400px", width: "auto" }}
             />
-            <div className="absolute inset-0 bg-blue-500 bg-opacity-0 group-hover:bg-opacity-10 rounded-2xl transition-all duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 rounded-3xl transition-all duration-500"></div>
+
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           </div>
         </div>
 
