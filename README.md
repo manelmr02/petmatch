@@ -7,3 +7,4 @@ He decidido probar con estas tecnologías con PetMatch.
 3. Base de datos de Firebase -> Utiliza MongoDB.
 4. Utilización de React Router para poder manejar las rutas.
 5. Utilización de tailwind para modificar el apartado visual de la página ya que es mas cómodo que CSS.
+6. Utilización de notistack para las alertas y notificaciones.
