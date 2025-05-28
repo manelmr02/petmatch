@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 
 import './index.css';
+import 'react-phone-input-2/lib/style.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

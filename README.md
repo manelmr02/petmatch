@@ -9,3 +9,4 @@ He decidido probar con estas tecnologías con PetMatch.
 5. Utilización de tailwind para modificar el apartado visual de la página ya que es mas cómodo que CSS.
 6. Utilización de notistack para las alertas y notificaciones.
 7. Utilizacion de Iconos de MaterialUI.
+8. Decidimos utilizar uuid lo cual permite genera identificadores únicos que usaremos en la subida de imágenes al almacenamiento de Firebase.
