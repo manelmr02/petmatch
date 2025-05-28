@@ -1,5 +1,5 @@
 # ANOTACIONES SOBRE LA CREACION DE PETMATCH
-En la empresa utilizamos React, Firebase y Material UI.
+En la empresa estamos utilizando React, Firebase y Material UI entre otras librerias de React como Redux,etc.
 He decidido probar con estas tecnologías con PetMatch.
 
 1. Creación del proyecto con Vite usando un template de React.
@@ -8,5 +8,5 @@ He decidido probar con estas tecnologías con PetMatch.
 4. Utilización de React Router para poder manejar las rutas.
 5. Utilización de tailwind para modificar el apartado visual de la página ya que es mas cómodo que CSS.
 6. Utilización de notistack para las alertas y notificaciones.
-7. Utilizacion de Iconos de MaterialUI.
-8. Decidimos utilizar uuid lo cual permite genera identificadores únicos que usaremos en la subida de imágenes al almacenamiento de Firebase.
+7. Utilización de Iconos de MaterialUI.
+8. Decido utilizar uuid lo cual permite genera identificadores únicos que usaremos en la subida de imágenes al almacenamiento de Firebase.
