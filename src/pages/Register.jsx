@@ -9,6 +9,8 @@ import {
   Box,
   CircularProgress,
   MenuItem,
+  Autocomplete,
+  Avatar,
 } from "@mui/material"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -17,17 +19,30 @@ import { createUserWithEmailAndPassword } from "firebase/auth"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { doc, setDoc } from "firebase/firestore"
 import { auth, db, storage } from "../firebase"
-import { v4 as uuidv4 } from "uuid"
 import PhoneInput from "react-phone-input-2"
 import "react-phone-input-2/lib/style.css"
+
+const provincias = [
+  "Álava", "Albacete", "Alicante", "Almería", "Asturias", "Ávila", "Badajoz", "Barcelona", "Burgos",
+  "Cáceres", "Cádiz", "Cantabria", "Castellón", "Ciudad Real", "Córdoba", "Cuenca", "Gerona", "Granada",
+  "Guadalajara", "Guipúzcoa", "Huelva", "Huesca", "Islas Baleares", "Jaén", "La Coruña", "La Rioja",
+  "Las Palmas", "León", "Lérida", "Lugo", "Madrid", "Málaga", "Murcia", "Navarra", "Orense", "Palencia",
+  "Pontevedra", "Salamanca", "Santa Cruz de Tenerife", "Segovia", "Sevilla", "Soria", "Tarragona",
+  "Teruel", "Toledo", "Valencia", "Valladolid", "Vizcaya", "Zamora", "Zaragoza"
+]
 
 export default function Register() {
   const [userType, setUserType] = useState("adoptante")
   const [form, setForm] = useState({})
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState(null)
   const { enqueueSnackbar } = useSnackbar()
   const navigate = useNavigate()
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const validatePhone = (phone) => phone?.length >= 10
+  const validateDNI = (dni) => /^\d{8}[A-HJ-NP-TV-Z]$/i.test(dni)
 
   const handleChange = (e) => {
     const { name, value, files } = e.target || {}
@@ -37,14 +52,16 @@ export default function Register() {
       setUserType(val)
       setForm({})
       setErrors({})
+      setImagePreview(null)
     } else {
       setForm((prev) => ({ ...prev, [name]: val }))
+      if (name === "imagen" && files?.[0]) {
+        const reader = new FileReader()
+        reader.onloadend = () => setImagePreview(reader.result)
+        reader.readAsDataURL(files[0])
+      }
     }
   }
-
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  const validatePhone = (phone) => phone?.length >= 10
-  const validateDNI = (dni) => /^\d{8}[A-HJ-NP-TV-Z]$/i.test(dni)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -69,7 +86,7 @@ export default function Register() {
       let imageUrl = null
 
       if (imagen) {
-        const storageRef = ref(storage, `${userType}s/${uid}-${uuidv4()}`)
+        const storageRef = ref(storage, `usuarios/${userType}s/${uid}/perfil.jpg`)
         await uploadBytes(storageRef, imagen)
         imageUrl = await getDownloadURL(storageRef)
       }
@@ -118,39 +135,11 @@ export default function Register() {
   })
 
   return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 120px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "20px 0",
-      }}
-    >
+    <div style={{ minHeight: "calc(100vh - 120px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 0" }}>
       <Container maxWidth="sm">
-        <Paper
-          elevation={10}
-          sx={{
-            p: 4,
-            borderRadius: 3,
-            background: "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255,255,255,0.2)",
-          }}
-        >
+        <Paper elevation={10} sx={{ p: 4, borderRadius: 3, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.2)" }}>
           <Box textAlign="center" mb={3}>
-            <Typography
-              variant="h4"
-              gutterBottom
-              sx={{
-                fontWeight: "bold",
-                background: "linear-gradient(45deg, #2196F3, #1976D2)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                mb: 1,
-              }}
-            >
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", background: "linear-gradient(45deg, #2196F3, #1976D2)", backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", mb: 1 }}>
               Crear Cuenta
             </Typography>
             <Typography variant="body1" color="text.secondary">
@@ -159,14 +148,7 @@ export default function Register() {
           </Box>
 
           <form onSubmit={handleSubmit}>
-            <TextField
-              select
-              label="Tipo de usuario"
-              name="userType"
-              value={userType}
-              onChange={handleChange}
-              {...commonProps}
-            >
+            <TextField select label="Tipo de usuario" name="userType" value={userType} onChange={handleChange} {...commonProps}>
               <MenuItem value="adoptante">Adoptante</MenuItem>
               <MenuItem value="refugio">Refugio</MenuItem>
             </TextField>
@@ -187,12 +169,27 @@ export default function Register() {
                     disabled={loading}
                   />
                   {errors.telefono && (
-                    <Typography variant="caption" color="error">
-                      {errors.telefono}
-                    </Typography>
+                    <Typography variant="caption" color="error">{errors.telefono}</Typography>
                   )}
                 </Box>
                 <TextField label="Dirección" name="direccion" {...withError("direccion")} required />
+                <Autocomplete
+                  options={provincias}
+                  value={form.provincia || null}
+                  onChange={(_, value) => setForm((prev) => ({ ...prev, provincia: value }))}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Provincia"
+                      name="provincia"
+                      placeholder="Selecciona una provincia..."
+                      required
+                      {...withError("provincia")}
+                    />
+                  )}
+                  fullWidth
+                  disableClearable
+                />
               </>
             )}
 
@@ -200,7 +197,23 @@ export default function Register() {
               <>
                 <TextField label="Nombre del Refugio" name="nombreRefugio" {...withError("nombreRefugio")} required />
                 <TextField label="Dirección" name="direccion" {...withError("direccion")} required />
-                <TextField label="Provincia" name="provincia" {...withError("provincia")} required />
+                <Autocomplete
+                  options={provincias}
+                  value={form.provincia || null}
+                  onChange={(_, value) => setForm((prev) => ({ ...prev, provincia: value }))}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Provincia"
+                      name="provincia"
+                      placeholder="Selecciona una provincia..."
+                      required
+                      {...withError("provincia")}
+                    />
+                  )}
+                  fullWidth
+                  disableClearable
+                />
                 <TextField label="Web" name="web" {...withError("web")} />
                 <Box mt={2}>
                   <PhoneInput
@@ -213,33 +226,28 @@ export default function Register() {
                     disabled={loading}
                   />
                   {errors.telefono && (
-                    <Typography variant="caption" color="error">
-                      {errors.telefono}
-                    </Typography>
+                    <Typography variant="caption" color="error">{errors.telefono}</Typography>
                   )}
                 </Box>
               </>
             )}
 
-            <TextField
-              label="Correo electrónico"
-              type="email"
-              name="email"
-              {...withError("email")}
-              required
-            />
-            <TextField
-              label="Contraseña"
-              type="password"
-              name="password"
-              {...withError("password")}
-              required
-            />
+            <TextField label="Correo electrónico" type="email" name="email" {...withError("email")} required />
+            <TextField label="Contraseña" type="password" name="password" {...withError("password")} required />
 
             <Button variant="outlined" component="label" fullWidth sx={{ mt: 2, mb: 1, borderRadius: 2 }}>
               Subir imagen
               <input type="file" name="imagen" accept="image/*" hidden onChange={handleChange} />
             </Button>
+
+            {imagePreview && (
+              <Box mt={2} textAlign="center">
+                <Typography variant="caption" color="text.secondary">Previsualización de la imagen de perfil:</Typography>
+                <Box mt={1} display="flex" justifyContent="center">
+                  <Avatar src={imagePreview} alt="Preview" sx={{ width: 96, height: 96, borderRadius: 2, boxShadow: 2 }} />
+                </Box>
+              </Box>
+            )}
 
             <Button
               type="submit"
