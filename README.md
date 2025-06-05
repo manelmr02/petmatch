@@ -10,3 +10,4 @@ He decidido probar con estas tecnologías con PetMatch.
 6. Utilización de notistack para las alertas y notificaciones.
 7. Utilización de Iconos de MaterialUI.
 8. Decido utilizar uuid lo cual permite genera identificadores únicos que usaremos en la subida de imágenes al almacenamiento de Firebase.
+9. Instalados hooks personalizados de react creados para Firebase.
