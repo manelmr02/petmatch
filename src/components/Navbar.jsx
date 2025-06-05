@@ -16,12 +16,12 @@ import {
 } from "@mui/material"
 import { Link, useNavigate } from "react-router-dom"
 import { onAuthStateChanged, signOut } from "firebase/auth"
-import { auth } from "../firebase"
+import { auth, db } from "../firebase"
+import { doc, getDoc } from "firebase/firestore"
 import { useSnackbar } from "notistack"
 import Person from "@mui/icons-material/Person"
 import Logout from "@mui/icons-material/Logout"
 import ExpandMore from "@mui/icons-material/ExpandMore"
-
 import logo from "../assets/logoPetMatchNoBg.png"
 
 export default function Navbar() {
@@ -33,10 +33,37 @@ export default function Navbar() {
 
   const open = Boolean(anchorEl)
 
-  // Escuchar cambios en el estado de autenticación
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser)
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const tipos = ["adoptantes", "refugios"]
+        let userData = null
+
+        for (const tipo of tipos) {
+          const ref = doc(db, tipo, currentUser.uid)
+          const snap = await getDoc(ref)
+          if (snap.exists()) {
+            userData = snap.data()
+            break
+          }
+        }
+
+        const displayName =
+          userData?.nombre?.split(" ")[0] ||
+          userData?.nombreRefugio?.split(" ")[0] ||
+          currentUser.email.split("@")[0]
+
+        const photoURL = userData?.imagen || null
+
+        setUser({
+          ...currentUser,
+          displayName,
+          photoURL,
+        })
+      } else {
+        setUser(null)
+      }
+
       setLoading(false)
     })
 
@@ -60,19 +87,13 @@ export default function Navbar() {
     try {
       await signOut(auth)
       handleMenuClose()
-      enqueueSnackbar("Sesión cerrada correctamente", {
-        variant: "success",
-      })
+      enqueueSnackbar("Sesión cerrada correctamente", { variant: "success" })
       navigate("/")
     } catch (error) {
-      console.error("Error al cerrar sesión:", error)
-      enqueueSnackbar("Error al cerrar sesión: " + error.message, {
-        variant: "error",
-      })
+      enqueueSnackbar("Error al cerrar sesión: " + error.message, { variant: "error" })
     }
   }
 
-  // Función para obtener las iniciales del nombre
   const getInitials = (name) => {
     if (!name) return "U"
     return name
@@ -83,7 +104,6 @@ export default function Navbar() {
       .slice(0, 2)
   }
 
-  // Función para obtener el nombre a mostrar
   const getDisplayName = () => {
     if (user?.displayName) return user.displayName
     if (user?.email) return user.email.split("@")[0]
@@ -94,35 +114,7 @@ export default function Navbar() {
     return (
       <AppBar position="static">
         <Toolbar>
-          <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-            <img
-              src={logo || "/placeholder.svg"}
-              alt="PetMatch logo"
-              style={{
-                height: 60,
-                marginRight: 10,
-                cursor: "pointer",
-                transition: "transform 0.2s ease-in-out",
-              }}
-              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-            />
-          </Link>
-          <Typography
-            variant="h6"
-            component={Link}
-            to="/"
-            sx={{
-              flexGrow: 1,
-              textDecoration: "none",
-              color: "inherit",
-              cursor: "pointer",
-              transition: "opacity 0.2s ease-in-out",
-              "&:hover": {
-                opacity: 0.8,
-              },
-            }}
-          >
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
             PetMatch
           </Typography>
         </Toolbar>
@@ -174,7 +166,6 @@ export default function Navbar() {
         </Button>
 
         {user ? (
-          // Usuario autenticado - Mostrar perfil con dropdown
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Button
               color="inherit"
@@ -192,11 +183,7 @@ export default function Navbar() {
               <Avatar
                 src={user.photoURL}
                 alt={getDisplayName()}
-                sx={{
-                  width: 32,
-                  height: 32,
-                  fontSize: "0.875rem",
-                }}
+                sx={{ width: 32, height: 32, fontSize: "0.875rem" }}
               >
                 {!user.photoURL && getInitials(getDisplayName())}
               </Avatar>
@@ -262,7 +249,6 @@ export default function Navbar() {
             </Menu>
           </Box>
         ) : (
-          // Usuario no autenticado - Mostrar botones de login y registro
           <>
             <Button color="inherit" component={Link} to="/login">
               Iniciar Sesión
