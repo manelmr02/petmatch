@@ -64,31 +64,46 @@ export default function Register() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    const { email, password, imagen, telefono, dni, ...rest } = form
-    const newErrors = {}
+    e.preventDefault();
+    setLoading(true);
+    const { email, password, imagen, telefono, dni, ...rest } = form;
+    const newErrors = {};
 
-    if (!validateEmail(email)) newErrors.email = "Formato de email inválido"
-    if (!validatePhone(telefono)) newErrors.telefono = "Teléfono inválido"
-    if (userType === "adoptante" && !validateDNI(dni)) newErrors.dni = "DNI inválido"
+    if (!validateEmail(email)) newErrors.email = "Formato de email inválido";
+    if (!validatePhone(telefono)) newErrors.telefono = "Teléfono inválido";
+    if (!password) newErrors.password = "La contraseña es obligatoria";
 
-    setErrors(newErrors)
+    if (userType === "adoptante") {
+      if (!form.nombre) newErrors.nombre = "El nombre es obligatorio";
+      if (!form.apellidos) newErrors.apellidos = "Los apellidos son obligatorios";
+      if (!validateDNI(dni)) newErrors.dni = "DNI inválido";
+      if (!form.direccion) newErrors.direccion = "La dirección es obligatoria";
+      if (!form.provincia) newErrors.provincia = "La provincia es obligatoria";
+    }
+
+    if (userType === "refugio") {
+      if (!form.nombreRefugio) newErrors.nombreRefugio = "El nombre del refugio es obligatorio";
+      if (!form.direccion) newErrors.direccion = "La dirección es obligatoria";
+      if (!form.provincia) newErrors.provincia = "La provincia es obligatoria";
+    }
+
+    setErrors(newErrors);
+
     if (Object.keys(newErrors).length > 0) {
-      enqueueSnackbar("Revisa los errores en el formulario", { variant: "error" })
-      setLoading(false)
-      return
+      enqueueSnackbar("Revisa los errores en el formulario", { variant: "error" });
+      setLoading(false);
+      return;
     }
 
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password)
-      const uid = cred.user.uid
-      let imageUrl = null
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
+      let imageUrl = null;
 
       if (imagen) {
-        const storageRef = ref(storage, `usuarios/${userType}s/${uid}/perfil.jpg`)
-        await uploadBytes(storageRef, imagen)
-        imageUrl = await getDownloadURL(storageRef)
+        const storageRef = ref(storage, `usuarios/${userType}s/${uid}/perfil.jpg`);
+        await uploadBytes(storageRef, imagen);
+        imageUrl = await getDownloadURL(storageRef);
       }
 
       await setDoc(doc(db, `${userType}s`, uid), {
@@ -100,20 +115,19 @@ export default function Register() {
         ...rest,
         imagen: imageUrl || null,
         creadoEn: new Date().toISOString(),
-      })
+      });
 
-      await setDoc(doc(db, "usuarios", uid), {
-        rol: userType,
-      })
+      await setDoc(doc(db, "usuarios", uid), { rol: userType });
 
-      enqueueSnackbar("Cuenta creada con éxito", { variant: "success" })
-      navigate("/mascotas")
-    } catch (error) {
-      enqueueSnackbar(error.message, { variant: "error" })
+      enqueueSnackbar("Cuenta creada con éxito", { variant: "success" });
+      navigate("/mascotas");
+    } catch {
+      enqueueSnackbar("El email ya está en uso", { variant: "error" });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
 
   const commonProps = {
     fullWidth: true,
