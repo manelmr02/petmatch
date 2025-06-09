@@ -1,34 +1,58 @@
+// Directiva de Next.js (no necesaria si usás Vite/CRA, en este caso aunque se use Vite, lo pongo debido a buena praxis que nos recomendaron en las practicas)
 "use client"
 
+// Hooks de React para manejar estado
 import { useState } from "react"
-import { TextField, Button, Container, Typography, Paper, Box, CircularProgress } from "@mui/material"
+
+// Componentes de Material UI para el formulario y estilos
+import {
+  TextField,
+  Button,
+  Container,
+  Typography,
+  Paper,
+  Box,
+  CircularProgress,
+} from "@mui/material"
+
+// Función de Firebase para iniciar sesión con email y contraseña
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "../firebase"
+
+// React Router: para navegación y enlaces
 import { useNavigate, Link } from "react-router-dom"
+
+// Snackbar para mostrar notificaciones emergentes
 import { useSnackbar } from "notistack"
 
 export default function Login() {
+  // Estados locales para email, contraseña y loading
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+
   const navigate = useNavigate()
   const { enqueueSnackbar } = useSnackbar()
 
+  // Función que maneja el login cuando se envía el formulario
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoading(true)
 
     try {
+      // Llamamos a Firebase Auth para iniciar sesión con email y contraseña
       await signInWithEmailAndPassword(auth, email, password)
+
+      // Mostramos notificación positiva
       enqueueSnackbar("¡Bienvenido de nuevo! 🎉", {
         variant: "success",
-        anchorOrigin: {
-          vertical: "top",
-          horizontal: "right",
-        },
+        anchorOrigin: { vertical: "top", horizontal: "right" },
       })
+
+      // Redirigimos a la página de mascotas
       navigate("/mascotas")
     } catch (error) {
+      // Definimos mensajes personalizados según el tipo de error
       let errorMessage = "Error en el login"
 
       switch (error.code) {
@@ -51,12 +75,10 @@ export default function Login() {
           errorMessage = "Error en el login: " + error.message
       }
 
+      // Mostramos el mensaje de error
       enqueueSnackbar(errorMessage, {
         variant: "error",
-        anchorOrigin: {
-          vertical: "top",
-          horizontal: "right",
-        },
+        anchorOrigin: { vertical: "top", horizontal: "right" },
       })
     } finally {
       setLoading(false)
@@ -64,9 +86,10 @@ export default function Login() {
   }
 
   return (
+    // Contenedor principal centrado verticalmente con padding
     <div
       style={{
-        minHeight: "calc(100vh - 120px)", 
+        minHeight: "calc(100vh - 120px)", // resta altura del header/footer
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -74,6 +97,7 @@ export default function Login() {
       }}
     >
       <Container maxWidth="sm">
+        {/* Card con fondo blanco y desenfoque */}
         <Paper
           elevation={10}
           sx={{
@@ -84,6 +108,7 @@ export default function Login() {
             border: "1px solid rgba(255, 255, 255, 0.2)",
           }}
         >
+          {/* Encabezado del formulario */}
           <Box textAlign="center" mb={3}>
             <Typography
               variant="h4"
@@ -104,7 +129,9 @@ export default function Login() {
             </Typography>
           </Box>
 
+          {/* Formulario de login */}
           <form onSubmit={handleLogin}>
+            {/* Campo de email */}
             <TextField
               label="Email"
               type="email"
@@ -125,6 +152,8 @@ export default function Login() {
                 },
               }}
             />
+
+            {/* Campo de contraseña */}
             <TextField
               label="Contraseña"
               type="password"
@@ -146,6 +175,7 @@ export default function Login() {
               }}
             />
 
+            {/* Botón de login con spinner cuando loading=true */}
             <Button
               type="submit"
               variant="contained"
@@ -173,6 +203,7 @@ export default function Login() {
               {loading ? <CircularProgress size={24} color="inherit" /> : "INICIAR SESIÓN"}
             </Button>
 
+            {/* Enlace para registrarse si no tiene cuenta */}
             <Box textAlign="center" mt={2}>
               <Typography variant="body2" color="text.secondary">
                 ¿No tienes una cuenta?{" "}

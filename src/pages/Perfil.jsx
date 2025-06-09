@@ -1,16 +1,27 @@
+// Directiva de Next.js (no necesaria si usás Vite/CRA, en este caso aunque se use Vite, lo pongo debido a buena praxis que nos recomendaron en las practicas)
 "use client"
 
+// Importaciones necesarias desde Material UI
 import {
     Container, Typography, Paper, TextField, Button, Box, CircularProgress, Autocomplete, Avatar
 } from "@mui/material"
+
+// Hooks de React
 import { useEffect, useState } from "react"
+
+// Firebase: autenticación, base de datos y almacenamiento
 import { auth, db, storage } from "../firebase"
 import { doc, getDoc, updateDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+
+// Snackbar para mostrar notificaciones al usuario
 import { useSnackbar } from "notistack"
+
+// Componente de entrada de número de teléfono con formato internacional
 import PhoneInput from "react-phone-input-2"
 import "react-phone-input-2/lib/style.css"
 
+// Lista de provincias que se usarán en el Autocomplete
 const provincias = [
     "Álava", "Albacete", "Alicante", "Almería", "Asturias", "Ávila", "Badajoz", "Barcelona", "Burgos",
     "Cáceres", "Cádiz", "Cantabria", "Castellón", "Ciudad Real", "Córdoba", "Cuenca", "Gerona", "Granada",
@@ -21,19 +32,34 @@ const provincias = [
 ]
 
 export default function Perfil() {
+    // Estado del formulario con los datos del usuario
     const [form, setForm] = useState({})
+
+    // Indicador de carga inicial
     const [loading, setLoading] = useState(true)
+
+    // Indicador de guardado en proceso
     const [saving, setSaving] = useState(false)
+
+    // Estado para comparar si el formulario ha cambiado
     const [initialForm, setInitialForm] = useState({})
+
+    // Tipo de usuario ("adoptantes" o "refugios")
     const [tipo, setTipo] = useState("")
+
+    // Vista previa de imagen cargada
     const [imagePreview, setImagePreview] = useState(null)
+
+    // Hook de snackbar para mostrar notificaciones
     const { enqueueSnackbar } = useSnackbar()
 
+    // Efecto que obtiene los datos del usuario al cargar la vista
     useEffect(() => {
         const fetchUser = async () => {
             const uid = auth.currentUser?.uid
             if (!uid) return
 
+            // Comprobamos si el usuario está en "adoptantes" o en "refugios"
             for (const tipoUsuario of ["adoptantes", "refugios"]) {
                 const refDoc = doc(db, tipoUsuario, uid)
                 const snap = await getDoc(refDoc)
@@ -52,12 +78,14 @@ export default function Perfil() {
         fetchUser()
     }, [])
 
+    // Maneja el cambio en los campos del formulario
     const handleChange = (e) => {
         const { name, value, files } = e.target || {}
         const val = files ? files[0] : value
 
         setForm((prev) => ({ ...prev, [name]: val }))
 
+        // Si se cambia la imagen, generamos la vista previa
         if (name === "imagen" && files?.[0]) {
             const reader = new FileReader()
             reader.onloadend = () => setImagePreview(reader.result)
@@ -65,6 +93,7 @@ export default function Perfil() {
         }
     }
 
+    // Envía los datos del formulario a Firestore y Storage
     const handleSubmit = async (e) => {
         e.preventDefault()
         setSaving(true)
@@ -72,6 +101,7 @@ export default function Perfil() {
             const uid = auth.currentUser.uid
             let updatedData = { ...form }
 
+            // Si hay nueva imagen, la subimos a Firebase Storage y guardamos su URL
             if (form.imagen instanceof File) {
                 const storageRef = ref(storage, `usuarios/${tipo}/${uid}/perfil.jpg`)
                 await uploadBytes(storageRef, form.imagen)
@@ -79,13 +109,15 @@ export default function Perfil() {
                 updatedData.imagen = url
             }
 
+            // Actualizamos los datos en Firestore
             await updateDoc(doc(db, tipo, uid), updatedData)
 
-            // Actualizar displayName y photoURL del currentUser
+            // También actualizamos el usuario actual en Firebase Auth (nombre e imagen)
             const snap = await getDoc(doc(db, tipo, uid))
             const data = snap.data()
             auth.currentUser.displayName = data?.nombre?.split(" ")[0] || data?.nombreRefugio?.split(" ")[0]
             auth.currentUser.photoURL = data?.imagen || null
+
             enqueueSnackbar("Perfil actualizado correctamente", { variant: "success" })
         } catch (err) {
             enqueueSnackbar("Error al guardar: " + err.message, { variant: "error" })
@@ -94,6 +126,7 @@ export default function Perfil() {
         }
     }
 
+    // Mientras se cargan los datos del usuario, mostramos un spinner
     if (loading) {
         return <Box textAlign="center" mt={10}><CircularProgress /></Box>
     }
@@ -119,7 +152,10 @@ export default function Perfil() {
                         Edita la información de tu perfil.
                     </Typography>
                 </Box>
+
+                {/* Formulario del perfil */}
                 <form onSubmit={handleSubmit}>
+                    {/* Si es adoptante, mostramos estos campos */}
                     {tipo === "adoptantes" ? (
                         <>
                             <TextField label="Nombre" name="nombre" value={form.nombre || ""} onChange={handleChange} fullWidth margin="normal" required />
@@ -136,6 +172,7 @@ export default function Perfil() {
                             />
                         </>
                     ) : (
+                        // Si es refugio, mostramos otros campos
                         <>
                             <TextField label="Nombre del Refugio" name="nombreRefugio" value={form.nombreRefugio || ""} onChange={handleChange} fullWidth margin="normal" required />
                             <TextField label="Dirección" name="direccion" value={form.direccion || ""} onChange={handleChange} fullWidth margin="normal" required />
@@ -151,6 +188,7 @@ export default function Perfil() {
                         </>
                     )}
 
+                    {/* Campo de teléfono con componente PhoneInput */}
                     <Box mt={2}>
                         <PhoneInput
                             country="es"
@@ -163,6 +201,7 @@ export default function Perfil() {
                         />
                     </Box>
 
+                    {/* Subida de imagen */}
                     <Box mt={3}>
                         <Button variant="outlined" component="label" fullWidth>
                             Cambiar Imagen de Perfil
@@ -170,13 +209,21 @@ export default function Perfil() {
                         </Button>
                     </Box>
 
+                    {/* Vista previa de la imagen si está seleccionada */}
                     {imagePreview && (
                         <Box mt={2} display="flex" justifyContent="center">
                             <Avatar src={imagePreview} sx={{ width: 96, height: 96 }} />
                         </Box>
                     )}
 
-                    <Button type="submit" variant="contained" fullWidth sx={{ mt: 3 }} disabled={saving || JSON.stringify(form) === JSON.stringify(initialForm)}>
+                    {/* Botón para guardar los cambios, deshabilitado si no hay cambios o se está guardando */}
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        sx={{ mt: 3 }}
+                        disabled={saving || JSON.stringify(form) === JSON.stringify(initialForm)}
+                    >
                         {saving ? <CircularProgress size={24} color="inherit" /> : "Guardar Cambios"}
                     </Button>
                 </form>

@@ -1,6 +1,10 @@
+// Directiva de Next.js que asegura que este componente se renderiza en el cliente (solo necesaria en Next.js, no en Vite)
 "use client"
 
+// Hooks de React
 import { useState, useEffect } from "react"
+
+// Componentes de Material UI
 import {
   AppBar,
   Toolbar,
@@ -14,31 +18,49 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material"
+
+// React Router: para navegación entre rutas
 import { Link, useNavigate } from "react-router-dom"
+
+// Firebase: autenticación y base de datos
 import { onAuthStateChanged, signOut } from "firebase/auth"
 import { auth, db } from "../firebase"
 import { doc, getDoc } from "firebase/firestore"
+
+// Notificaciones estilo snackbar
 import { useSnackbar } from "notistack"
+
+// Iconos de Material UI
 import Person from "@mui/icons-material/Person"
 import Logout from "@mui/icons-material/Logout"
 import ExpandMore from "@mui/icons-material/ExpandMore"
+
+// Logo del proyecto
 import logo from "../assets/logoPetMatchNoBg.png"
 
 export default function Navbar() {
+  // Estado del usuario actual autenticado
   const [user, setUser] = useState(null)
+  // Estado para controlar el menú desplegable del usuario
   const [anchorEl, setAnchorEl] = useState(null)
+  // Estado para controlar si la sesión se está verificando
   const [loading, setLoading] = useState(true)
+
   const navigate = useNavigate()
   const { enqueueSnackbar } = useSnackbar()
 
+  // Booleano para saber si el menú está abierto
   const open = Boolean(anchorEl)
 
+  // Al montar el componente, escuchamos el estado de autenticación
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
+        // Se comprueba si el usuario es adoptante o refugio
         const tipos = ["adoptantes", "refugios"]
         let userData = null
 
+        // Buscamos los datos del usuario en la colección correspondiente
         for (const tipo of tipos) {
           const ref = doc(db, tipo, currentUser.uid)
           const snap = await getDoc(ref)
@@ -48,13 +70,16 @@ export default function Navbar() {
           }
         }
 
+        // Nombre a mostrar: primer nombre del usuario o prefijo del email
         const displayName =
           userData?.nombre?.split(" ")[0] ||
           userData?.nombreRefugio?.split(" ")[0] ||
           currentUser.email.split("@")[0]
 
+        // Imagen de perfil si existe
         const photoURL = userData?.imagen || null
 
+        // Se guarda el usuario en el estado con los datos formateados
         setUser({
           ...currentUser,
           displayName,
@@ -64,25 +89,31 @@ export default function Navbar() {
         setUser(null)
       }
 
+      // Terminamos de cargar
       setLoading(false)
     })
 
+    // Cleanup del listener
     return () => unsubscribe()
   }, [])
 
+  // Abre el menú
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget)
   }
 
+  // Cierra el menú
   const handleMenuClose = () => {
     setAnchorEl(null)
   }
 
+  // Redirige a la vista de perfil
   const handleEditProfile = () => {
     handleMenuClose()
     navigate("/perfil")
   }
 
+  // Cierra la sesión del usuario
   const handleLogout = async () => {
     try {
       await signOut(auth)
@@ -94,6 +125,7 @@ export default function Navbar() {
     }
   }
 
+  // Devuelve las iniciales del nombre si no hay imagen de perfil
   const getInitials = (name) => {
     if (!name) return "U"
     return name
@@ -104,12 +136,14 @@ export default function Navbar() {
       .slice(0, 2)
   }
 
+  // Devuelve el nombre a mostrar en la interfaz
   const getDisplayName = () => {
     if (user?.displayName) return user.displayName
     if (user?.email) return user.email.split("@")[0]
     return "Usuario"
   }
 
+  // Mientras se carga la sesión, mostramos solo la barra vacía con el título
   if (loading) {
     return (
       <AppBar position="static">
@@ -125,6 +159,7 @@ export default function Navbar() {
   return (
     <AppBar position="static">
       <Toolbar>
+        {/* Logo como enlace al inicio */}
         <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img
             src={logo}
@@ -140,6 +175,7 @@ export default function Navbar() {
           />
         </Link>
 
+        {/* Texto del título que actúa como enlace también */}
         <Typography
           variant="h6"
           component={Link}
@@ -158,6 +194,7 @@ export default function Navbar() {
           PetMatch
         </Typography>
 
+        {/* Enlaces comunes para todos los usuarios */}
         <Button color="inherit" component={Link} to="/">
           Inicio
         </Button>
@@ -165,6 +202,7 @@ export default function Navbar() {
           Mascotas
         </Button>
 
+        {/* Si hay usuario logueado, mostramos avatar y menú */}
         {user ? (
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Button
@@ -180,6 +218,7 @@ export default function Navbar() {
                 },
               }}
             >
+              {/* Avatar con imagen o iniciales */}
               <Avatar
                 src={user.photoURL}
                 alt={getDisplayName()}
@@ -187,9 +226,13 @@ export default function Navbar() {
               >
                 {!user.photoURL && getInitials(getDisplayName())}
               </Avatar>
+
+              {/* Nombre del usuario */}
               <Typography variant="body1" sx={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>
                 {getDisplayName()}
               </Typography>
+
+              {/* Icono para expandir menú */}
               <ExpandMore
                 sx={{
                   transform: open ? "rotate(180deg)" : "rotate(0deg)",
@@ -198,6 +241,7 @@ export default function Navbar() {
               />
             </Button>
 
+            {/* Menú desplegable */}
             <Menu
               anchorEl={anchorEl}
               open={open}
@@ -233,13 +277,17 @@ export default function Navbar() {
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
+              {/* Opción: Editar perfil */}
               <MenuItem onClick={handleEditProfile}>
                 <ListItemIcon>
                   <Person fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Editar Perfil</ListItemText>
               </MenuItem>
+
               <Divider />
+
+              {/* Opción: Cerrar sesión */}
               <MenuItem onClick={handleLogout}>
                 <ListItemIcon>
                   <Logout fontSize="small" />
@@ -249,6 +297,7 @@ export default function Navbar() {
             </Menu>
           </Box>
         ) : (
+          // Si no hay sesión, mostrar botones de login y registro
           <>
             <Button color="inherit" component={Link} to="/login">
               Iniciar Sesión

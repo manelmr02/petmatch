@@ -1,5 +1,7 @@
+// "use client" se usa si estás en Next.js para asegurar que se ejecute en el cliente
 "use client"
 
+// Importamos componentes visuales de Material UI
 import {
   TextField,
   Button,
@@ -12,16 +14,33 @@ import {
   Autocomplete,
   Avatar,
 } from "@mui/material"
+
+// Hook de estado de React
 import { useState } from "react"
+
+// Hook de navegación de React Router
 import { useNavigate } from "react-router-dom"
+
+// Hook para notificaciones tipo snackbar
 import { useSnackbar } from "notistack"
+
+// Función de Firebase Auth para crear usuario con email y password
 import { createUserWithEmailAndPassword } from "firebase/auth"
+
+// Funciones para subir archivos a Firebase Storage
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+
+// Funciones para guardar documentos en Firestore
 import { doc, setDoc } from "firebase/firestore"
+
+// Configuración de Firebase
 import { auth, db, storage } from "../firebase"
+
+// Componente externo para inputs de teléfono con formato
 import PhoneInput from "react-phone-input-2"
 import "react-phone-input-2/lib/style.css"
 
+// Lista de provincias para usar en el Autocomplete
 const provincias = [
   "Álava", "Albacete", "Alicante", "Almería", "Asturias", "Ávila", "Badajoz", "Barcelona", "Burgos",
   "Cáceres", "Cádiz", "Cantabria", "Castellón", "Ciudad Real", "Córdoba", "Cuenca", "Gerona", "Granada",
@@ -32,29 +51,40 @@ const provincias = [
 ]
 
 export default function Register() {
+  // Tipo de usuario: 'adoptante' o 'refugio'
   const [userType, setUserType] = useState("adoptante")
+  // Datos del formulario
   const [form, setForm] = useState({})
+  // Errores de validación
   const [errors, setErrors] = useState({})
+  // Estado de carga al enviar
   const [loading, setLoading] = useState(false)
+  // Vista previa de imagen
   const [imagePreview, setImagePreview] = useState(null)
+
   const { enqueueSnackbar } = useSnackbar()
   const navigate = useNavigate()
 
+  // Validadores simples para email, teléfono y DNI
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   const validatePhone = (phone) => phone?.length >= 10
   const validateDNI = (dni) => /^\d{8}[A-HJ-NP-TV-Z]$/i.test(dni)
 
+  // Maneja cambios en cualquier campo del formulario
   const handleChange = (e) => {
     const { name, value, files } = e.target || {}
     const val = files ? files[0] : value
 
     if (name === "userType") {
+      // Si cambia el tipo de usuario, reseteamos todo el formulario
       setUserType(val)
       setForm({})
       setErrors({})
       setImagePreview(null)
     } else {
       setForm((prev) => ({ ...prev, [name]: val }))
+
+      // Si se sube imagen, generamos vista previa
       if (name === "imagen" && files?.[0]) {
         const reader = new FileReader()
         reader.onloadend = () => setImagePreview(reader.result)
@@ -63,16 +93,21 @@ export default function Register() {
     }
   }
 
+  // Envía el formulario para registrar un nuevo usuario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Destructuramos los datos del formulario
     const { email, password, imagen, telefono, dni, ...rest } = form;
     const newErrors = {};
 
+    // Validaciones básicas
     if (!validateEmail(email)) newErrors.email = "Formato de email inválido";
     if (!validatePhone(telefono)) newErrors.telefono = "Teléfono inválido";
     if (!password) newErrors.password = "La contraseña es obligatoria";
 
+    // Validaciones específicas por tipo de usuario
     if (userType === "adoptante") {
       if (!form.nombre) newErrors.nombre = "El nombre es obligatorio";
       if (!form.apellidos) newErrors.apellidos = "Los apellidos son obligatorios";
@@ -89,6 +124,7 @@ export default function Register() {
 
     setErrors(newErrors);
 
+    // Si hay errores, los mostramos y cancelamos el envío
     if (Object.keys(newErrors).length > 0) {
       enqueueSnackbar("Revisa los errores en el formulario", { variant: "error" });
       setLoading(false);
@@ -96,16 +132,19 @@ export default function Register() {
     }
 
     try {
+      // Creamos usuario en Firebase Auth
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const uid = cred.user.uid;
       let imageUrl = null;
 
+      // Subimos imagen si existe
       if (imagen) {
         const storageRef = ref(storage, `usuarios/${userType}s/${uid}/perfil.jpg`);
         await uploadBytes(storageRef, imagen);
         imageUrl = await getDownloadURL(storageRef);
       }
 
+      // Guardamos datos en colección 'adoptantes' o 'refugios'
       await setDoc(doc(db, `${userType}s`, uid), {
         uid,
         email,
@@ -117,6 +156,7 @@ export default function Register() {
         creadoEn: new Date().toISOString(),
       });
 
+      // Registramos su rol en la colección 'usuarios'
       await setDoc(doc(db, "usuarios", uid), { rol: userType });
 
       enqueueSnackbar("Cuenta creada con éxito", { variant: "success" });
@@ -128,7 +168,7 @@ export default function Register() {
     }
   };
 
-
+  // Estilos y props comunes para los campos
   const commonProps = {
     fullWidth: true,
     margin: "normal",
@@ -146,6 +186,7 @@ export default function Register() {
     },
   }
 
+  // Combina commonProps con errores si los hay
   const withError = (name) => ({
     ...commonProps,
     error: Boolean(errors[name]),
@@ -166,11 +207,13 @@ export default function Register() {
           </Box>
 
           <form onSubmit={handleSubmit}>
+            {/* Selector de tipo de usuario */}
             <TextField select label="Tipo de usuario" name="userType" value={userType} onChange={handleChange} {...commonProps}>
               <MenuItem value="adoptante">Adoptante</MenuItem>
               <MenuItem value="refugio">Refugio</MenuItem>
             </TextField>
 
+            {/* Campos para Adoptante */}
             {userType === "adoptante" && (
               <>
                 <TextField label="Nombre" name="nombre" {...withError("nombre")} required />
@@ -211,6 +254,7 @@ export default function Register() {
               </>
             )}
 
+            {/* Campos para Refugio */}
             {userType === "refugio" && (
               <>
                 <TextField label="Nombre del Refugio" name="nombreRefugio" {...withError("nombreRefugio")} required />
@@ -250,9 +294,11 @@ export default function Register() {
               </>
             )}
 
+            {/* Campos comunes para ambos tipos */}
             <TextField label="Correo electrónico" type="email" name="email" {...withError("email")} required />
             <TextField label="Contraseña" type="password" name="password" {...withError("password")} required />
 
+            {/* Subida de imagen y previsualización */}
             <Button variant="outlined" component="label" fullWidth sx={{ mt: 2, mb: 1, borderRadius: 2 }}>
               Subir imagen
               <input type="file" name="imagen" accept="image/*" hidden onChange={handleChange} />
@@ -267,6 +313,7 @@ export default function Register() {
               </Box>
             )}
 
+            {/* Botón de registro */}
             <Button
               type="submit"
               variant="contained"

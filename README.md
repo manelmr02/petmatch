@@ -11,3 +11,4 @@ He decidido probar con estas tecnologías con PetMatch.
 7. Utilización de Iconos de MaterialUI.
 8. Decido utilizar uuid lo cual permite genera identificadores únicos que usaremos en la subida de imágenes al almacenamiento de Firebase.
 9. Instalados hooks personalizados de react creados para Firebase.
+10. Adaptacion de los test previamente mencionados en una entrega a Vitest, al haber cambios se perciben algunos errores debidos también a la nula experiencia trabajando con este tipo de test de React.

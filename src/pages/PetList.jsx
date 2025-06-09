@@ -1,7 +1,10 @@
 "use client"
 
+// Hooks de React para manejar estado y efectos secundarios
 import { useState, useEffect } from "react"
+// Hook de React Router para redirecciones programáticas
 import { useNavigate } from "react-router-dom"
+// Importación de componentes visuales desde Material UI
 import {
   Container,
   Grid,
@@ -26,8 +29,12 @@ import {
   Paper,
   InputAdornment,
 } from "@mui/material"
+
+// Iconos de Material UI para botones y acciones comunes
 import { Close, Edit, Delete, Add, Pets, Search, FilterList, Clear } from "@mui/icons-material"
+// Hook de Firebase Auth para escuchar cambios de sesión
 import { onAuthStateChanged } from "firebase/auth"
+// Funciones de Firestore para lectura/escritura en la base de datos
 import {
   collection,
   doc,
@@ -39,26 +46,40 @@ import {
   serverTimestamp,
   orderBy,
 } from "firebase/firestore"
+// Funciones de Firebase Storage para subir archivos e imágenes
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+// Configuración de Firebase (auth, base de datos y almacenamiento)
 import { auth, db, storage } from "../firebase"
+
+// Hook para mostrar notificaciones tipo snackbar al usuario
 import { useSnackbar } from "notistack"
 
+// Componente principal para listar, filtrar, ver y publicar mascotas
 export default function PetList() {
-  const navigate = useNavigate()
+  const navigate = useNavigate()// Para navegación programática entre rutas
+  // Estado que almacena todas las mascotas disponibles en la plataforma
   const [pets, setPets] = useState([])
+  // Mascotas filtradas según los filtros activos
   const [filteredPets, setFilteredPets] = useState([])
+   // Mascota seleccionada para mostrar detalles en el modal
   const [selectedPet, setSelectedPet] = useState(null)
+  // Usuario autenticado actual
   const [user, setUser] = useState(null)
   const [userRole, setUserRole] = useState(null) // 'adoptante', 'refugio', null
+   // Información extra del refugio si el usuario tiene ese rol
   const [refugioInfo, setRefugioInfo] = useState(null)
+  // Estado de carga mientras se recuperan las mascotas o sesión
   const [loading, setLoading] = useState(true)
+  // Estado que guarda los filtros aplicados por el usuario
   const [filters, setFilters] = useState({
     especie: "",
     edad: "",
     refugio: "",
     busqueda: "",
   })
+  // Estado que controla si el diálogo para agregar mascota está abierto
   const [openAddDialog, setOpenAddDialog] = useState(false)
+  // Datos del formulario para publicar nueva mascota
   const [newPet, setNewPet] = useState({
     nombre: "",
     especie: "Perro",
@@ -68,10 +89,13 @@ export default function PetList() {
     foto: null,
     caracteristicas: [],
   })
+  // Característica temporal que se añade al array de características
   const [newCharacteristic, setNewCharacteristic] = useState("")
+  // Estado para indicar si se está publicando una mascota
   const [submitting, setSubmitting] = useState(false)
+  // Estado para mostrar una vista previa de la foto antes de subirla
   const [photoPreview, setPhotoPreview] = useState(null)
-  const { enqueueSnackbar } = useSnackbar()
+  const { enqueueSnackbar } = useSnackbar() // Para mostrar mensajes tipo snackbar
 
   // Escuchar cambios de autenticación y obtener rol del usuario
   useEffect(() => {
