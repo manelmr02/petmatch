@@ -9,7 +9,7 @@ function Footer() {
         <div className="flex items-center mb-2 sm:mb-0">
           <Link to="/" className="flex items-center hover:opacity-80 transition-opacity duration-200">
             <img
-              src={logoImage || "/placeholder.svg"}
+              src={logoImage}
               alt="PetMatch Logo"
               width={40}
               height={40}

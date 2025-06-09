@@ -102,6 +102,10 @@ export default function Register() {
         creadoEn: new Date().toISOString(),
       })
 
+      await setDoc(doc(db, "usuarios", uid), {
+        rol: userType,
+      })
+
       enqueueSnackbar("Cuenta creada con éxito", { variant: "success" })
       navigate("/mascotas")
     } catch (error) {

@@ -127,7 +127,7 @@ export default function Navbar() {
       <Toolbar>
         <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img
-            src={logo || "/placeholder.svg"}
+            src={logo}
             alt="PetMatch logo"
             style={{
               height: 60,

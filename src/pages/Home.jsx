@@ -65,12 +65,12 @@ function Home() {
           <div className="text-center p-4">
             <div className="text-4xl mb-2">❤️</div>
             <h3 className="font-semibold text-gray-800 mb-2">Adopción responsable</h3>
-            <p className="text-gray-600">Proceso seguro y verificado para el bienestar animal</p>
+            <p className="text-gray-600">Proceso seguro y verificado para el bienestar animal.</p>
           </div>
           <div className="text-center p-4">
             <div className="text-4xl mb-2">🏠</div>
             <h3 className="font-semibold text-gray-800 mb-2">Hogar perfecto</h3>
-            <p className="text-gray-600">Te ayudamos a encontrar la mascota ideal para tu familia</p>
+            <p className="text-gray-600">Te ayudamos a encontrar la mascota ideal para tu familia.</p>
           </div>
         </div>
       </div>

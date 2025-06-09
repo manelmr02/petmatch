@@ -8,6 +8,8 @@ import Register from "./pages/Register"
 import PetList from "./pages/PetList"
 import Perfil from "./pages/Perfil"
 import PrivateRoute from "./components/PrivateRoute"
+import MisSolicitudes from "./pages/MisSolicitudes"
+
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/mascotas" element={<PetList />} />
+            <Route path="/solicitudes" element={<MisSolicitudes />} />
             <Route path="/perfil" element={
               <PrivateRoute>
                 <Perfil />
